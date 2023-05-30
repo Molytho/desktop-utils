@@ -13,6 +13,11 @@ public:
     void add_output(uint32_t name);
     void remove_output(uint32_t name);
 
+    void handle_ready(int events);
+    inline void pre_loop() { wl_display_prepare_read(display); }
+    inline void post_loop() { wl_display_cancel_read(display); }
+    inline int get_fd() {return wl_display_get_fd(display);}
+
 private:
     struct wl_display* display;
     struct wl_registry* registry;

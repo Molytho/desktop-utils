@@ -58,7 +58,10 @@ Output::Output(struct wl_output *output, char *path) : output_name(nullptr), pat
 }
 
 Output::~Output() {
-    kill_swaybg();
+    if (swaybg_pid > 0) {
+        kill(swaybg_pid, SIGTERM);
+        waitpid(swaybg_pid, nullptr, 0);
+    }
 }
 
 void Output::spawn_swaybg() {
@@ -81,9 +84,15 @@ void Output::spawn_swaybg() {
     }
 }
 
-void Output::kill_swaybg() {
-    kill(swaybg_pid, SIGTERM);
-    waitpid(swaybg_pid, nullptr, 0);
+void Output::transition(char *new_picture) {
+    path = new_picture;
+    pid_t old_pid = swaybg_pid;
+
+    spawn_swaybg();
+    sleep(1);
+
+    kill(old_pid, SIGTERM);
+    waitpid(old_pid, nullptr, 0);
 }
 
 bool Output::operator==(const struct wl_output *output) const {

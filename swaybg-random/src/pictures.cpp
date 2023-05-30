@@ -6,7 +6,6 @@
 #include <cstring>
 #include <algorithm>
 #include <random>
-#include <ctime>
 
 std::unordered_set<std::string> endings {
         ".png",

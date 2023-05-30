@@ -10,14 +10,13 @@ public:
     ~Output();
 
     void spawn_swaybg();
+    void transition(char* new_picture);
 
     bool operator==(const struct wl_output* output) const;
 
     const char* output_name;
 
 private:
-    void kill_swaybg();
-
     char* path;
     struct wl_output* output;
     pid_t swaybg_pid;

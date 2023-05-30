@@ -34,6 +34,7 @@ executable(
 		'src/pictures.cpp',
 		'src/output_handler.cpp',
 		'src/output.cpp',
+		'src/timer.cpp',
 	],
 	include_directories: 'include',
 	dependencies: [

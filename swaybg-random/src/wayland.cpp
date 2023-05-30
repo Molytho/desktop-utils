@@ -3,7 +3,8 @@
 #include <wayland-client.h>
 #include <cstdio>
 #include <cassert>
-#include "cstring"
+#include <cstring>
+#include <poll.h>
 
 void registry_handle_global_remove(void* data, struct wl_registry* registry, uint32_t name) {
     auto* wayland = (Wayland*)data;
@@ -66,4 +67,13 @@ void Wayland::remove_output(uint32_t name) {
     outputs.erase(name);
 
     wl_output_destroy(output);
+}
+
+void Wayland::handle_ready(int events) {
+    if (events & POLLIN) {
+        wl_display_read_events(display);
+        wl_display_dispatch_pending(display);
+        wl_display_roundtrip(display);
+        wl_display_prepare_read(display);
+    }
 }
