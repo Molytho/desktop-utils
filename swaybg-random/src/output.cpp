@@ -35,7 +35,7 @@ void output_handle_name(void *data,
              const char *name) {
     auto output = (Output*)data;
 
-    output->output_name = name;
+    output->output_name = strdup(name);
 
     output->spawn_swaybg();
 }
@@ -72,7 +72,7 @@ void Output::spawn_swaybg() {
         char* const argv[] = {
                 app,
                 "-o",
-                strdup(output_name),
+                output_name,
                 "-i",
                 path,
                 nullptr

@@ -14,7 +14,7 @@ public:
 
     bool operator==(const struct wl_output* output) const;
 
-    const char* output_name;
+    char* output_name;
 
 private:
     char* path;
