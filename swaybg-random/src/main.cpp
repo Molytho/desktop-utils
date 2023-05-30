@@ -12,9 +12,15 @@
 #define TIMER_FD_INDEX 1
 
 bool run = true;
+OutputHandler* outputHandlerRef = nullptr;
 
 void handle_sigterm(int signo) {
     run = false;
+}
+
+void handle_sigusr1(int signo) {
+    if (outputHandlerRef)
+        outputHandlerRef->next_picture();
 }
 
 struct arguments {
@@ -29,6 +35,14 @@ void init_signals() {
     sigterm_action.sa_handler = handle_sigterm;
 
     assert (!sigaction(SIGTERM, &sigterm_action, nullptr));
+
+
+    struct sigaction sigusr1_action;
+    sigusr1_action.sa_flags = 0;
+    sigemptyset(&sigusr1_action.sa_mask);
+    sigusr1_action.sa_handler = handle_sigusr1;
+
+    assert (!sigaction(SIGUSR1, &sigusr1_action, nullptr));
 }
 
 arguments parse_arguments(int argc, char* argv[]) {
@@ -62,6 +76,7 @@ int main(int argc, char* argv[]) {
             }
     };
 
+    outputHandlerRef = &outputHandler;
     init_signals();
 
     wayland.pre_loop();
@@ -84,4 +99,6 @@ int main(int argc, char* argv[]) {
         }
     }
     wayland.post_loop();
+
+    outputHandlerRef = nullptr;
 }
