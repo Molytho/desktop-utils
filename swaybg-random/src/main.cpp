@@ -17,6 +17,11 @@ void handle_sigterm(int signo) {
     run = false;
 }
 
+struct arguments {
+    char* directory_path;
+    int minutes;
+};
+
 void init_signals() {
     struct sigaction sigterm_action;
     sigterm_action.sa_flags = 0;
@@ -26,16 +31,23 @@ void init_signals() {
     assert (!sigaction(SIGTERM, &sigterm_action, nullptr));
 }
 
-int main(int argc, char* argv[]) {
-    if (argc > 2 || argc < 2) {
+arguments parse_arguments(int argc, char* argv[]) {
+    if (argc > 3 || argc < 3) {
         std::cerr << "Invalid arguments." << std::endl;
+        std::cerr << "Usage: swaybg-random <dir-path> <minutes>" << std::endl;
         exit(-1);
     }
 
-    Pictures pictures(argv[1]);
+    return { argv[1], std::atoi(argv[2]) };
+}
+
+int main(int argc, char* argv[]) {
+    auto args = parse_arguments(argc, argv);
+
+    Pictures pictures(args.directory_path);
     OutputHandler outputHandler(pictures);
     Wayland wayland(outputHandler);
-    Timer timer(outputHandler, 1);
+    Timer timer(outputHandler, args.minutes);
 
     struct pollfd pollfds[] {
             [WAYLAND_FD_INDEX] = {
