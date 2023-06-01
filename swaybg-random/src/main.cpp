@@ -8,8 +8,7 @@
 #include <csignal>
 #include <cassert>
 
-#define WAYLAND_FD_INDEX 0
-#define TIMER_FD_INDEX 1
+#define ARRAY_SIZE(array) (sizeof(array)/sizeof(*array))
 
 bool run = true;
 OutputHandler* outputHandlerRef = nullptr;
@@ -63,21 +62,24 @@ int main(int argc, char* argv[]) {
     Wayland wayland(outputHandler);
     Timer timer(outputHandler, args.minutes);
 
-    struct pollfd pollfds[] {
-            [WAYLAND_FD_INDEX] = {
-                    .fd = wayland.get_fd(),
-                    .events = POLLIN,
-                    .revents = 0,
-            },
-            [TIMER_FD_INDEX] = {
-                    .fd = timer.get_fd(),
-                    .events = POLLIN,
-                    .revents = 0,
-            }
-    };
 
     outputHandlerRef = &outputHandler;
     init_signals();
+
+
+    LoopElement* loopElements[] = {
+            &wayland,
+            &timer
+    };
+
+    struct pollfd pollfds[ARRAY_SIZE(loopElements)];
+    for (size_t i = 0; i < ARRAY_SIZE(pollfds); i++) {
+        pollfds[i] = {
+                .fd = loopElements[i]->get_fd(),
+                .events = loopElements[i]->get_mask(),
+                .revents = 0
+        };
+    }
 
     wayland.pre_loop();
     while (run) {
@@ -91,11 +93,10 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        if (pollfds[WAYLAND_FD_INDEX].revents != 0) {
-            wayland.handle_ready(pollfds[WAYLAND_FD_INDEX].revents);
-        }
-        if (pollfds[TIMER_FD_INDEX].revents != 0) {
-            timer.handle_action(pollfds[TIMER_FD_INDEX].revents);
+        for (size_t i = 0; i < ARRAY_SIZE(pollfds); i++) {
+            int events = pollfds[i].revents;
+            if (events)
+                loopElements[i]->handle_ready(events);
         }
     }
     wayland.post_loop();

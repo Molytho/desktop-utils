@@ -1,6 +1,7 @@
 #include "../include/wayland.h"
 
 #include <wayland-client.h>
+#include <iostream>
 #include <cstdio>
 #include <cassert>
 #include <cstring>
@@ -70,10 +71,15 @@ void Wayland::remove_output(uint32_t name) {
 }
 
 void Wayland::handle_ready(int events) {
-    if (events & POLLIN) {
+    if (events & (POLLERR|POLLHUP)) {
+        std::cerr << "Error on wayland fd" << std::endl;
+        exit(EXIT_FAILURE);
+    } else if (events & POLLIN) {
         wl_display_read_events(display);
         wl_display_dispatch_pending(display);
         wl_display_roundtrip(display);
         wl_display_prepare_read(display);
+    } else {
+        assert (false);
     }
 }

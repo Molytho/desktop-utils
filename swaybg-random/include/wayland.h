@@ -1,22 +1,25 @@
 #ifndef BUILD_WAYLAND_H
 #define BUILD_WAYLAND_H
 
+#include "output_handler.h"
+#include "loop_element.h"
 #include <wayland-client.h>
 #include <functional>
 #include <map>
-#include "output_handler.h"
+#include <poll.h>
 
-class Wayland {
+class Wayland : public LoopElement {
 public:
     explicit Wayland(OutputHandler& handler);
     ~Wayland();
     void add_output(uint32_t name);
     void remove_output(uint32_t name);
 
-    void handle_ready(int events);
+    void handle_ready(int events) final;
     inline void pre_loop() { wl_display_prepare_read(display); }
     inline void post_loop() { wl_display_cancel_read(display); }
-    inline int get_fd() {return wl_display_get_fd(display);}
+    int get_fd() final { return wl_display_get_fd(display); }
+    short get_mask() final { return POLLIN; }
 
 private:
     struct wl_display* display;

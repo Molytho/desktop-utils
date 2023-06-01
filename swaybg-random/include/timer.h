@@ -2,12 +2,15 @@
 #define BUILD_TIMER_H
 
 #include "output_handler.h"
+#include "loop_element.h"
+#include <poll.h>
 
-class Timer {
+class Timer : public LoopElement {
 public:
     Timer(OutputHandler& outputHandler, unsigned int minutes);
-    inline int get_fd() {return fd;}
-    void handle_action(int events);
+    int get_fd() final { return fd; }
+    short get_mask() final { return POLLIN; }
+    void handle_ready(int events) final;
 
 private:
     int fd;
