@@ -7,10 +7,10 @@
 class Pictures {
 public:
     Pictures(const char* path);
-    char* get_next_picture();
+    int get_next_picture();
 
 private:
-    std::deque<std::filesystem::path> pictures;
+    std::deque<int> pictures; // file descriptors of the files
 };
 
 #endif //BUILD_PICTURES_H

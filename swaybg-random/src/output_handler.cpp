@@ -12,7 +12,6 @@ void OutputHandler::remove_output(struct wl_output *output) {
     for (auto it = outputs.cbegin(); it != outputs.cend(); it++) {
         auto* element = *it;
         if (*element == output) {
-            it = outputs.erase(it);
             delete element;
             break;
         }

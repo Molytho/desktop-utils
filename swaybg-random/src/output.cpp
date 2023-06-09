@@ -4,6 +4,7 @@
 #include <cstring>
 #include <signal.h>
 #include <sys/wait.h>
+#include <cstdio>
 
 void output_handle_geometry(void *data,
                  struct wl_output *wl_output,
@@ -53,7 +54,7 @@ const struct wl_output_listener output_listener = {
         .description = output_handle_description,
 };
 
-Output::Output(struct wl_output *output, char *path) : output_name(nullptr), path(path), output(output), swaybg_pid(0) {
+Output::Output(struct wl_output *output, int fd) : output_name(nullptr), picture(fd), output(output), swaybg_pid(0) {
     wl_output_add_listener(output, &output_listener, this);
 }
 
@@ -74,9 +75,14 @@ void Output::spawn_swaybg() {
                 "-o",
                 output_name,
                 "-i",
-                path,
+                "/dev/stdin",
                 nullptr
         };
+        int result = dup2(picture, 0);
+        if (result != 0) {
+            perror("Error while dupping fd to stdin");
+            exit(EXIT_FAILURE);
+        }
         execvp(app, argv);
         exit(EXIT_FAILURE);
     } else {
@@ -84,14 +90,15 @@ void Output::spawn_swaybg() {
     }
 }
 
-void Output::transition(char *new_picture) {
-    path = new_picture;
+void Output::transition(int new_picture) {
     pid_t old_pid = swaybg_pid;
+    picture = new_picture;
 
     spawn_swaybg();
     sleep(1);
 
     kill(old_pid, SIGTERM);
+    // TODO: TIMEOUT
     waitpid(old_pid, nullptr, 0);
 }
 
