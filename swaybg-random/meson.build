@@ -35,6 +35,7 @@ executable(
 		'src/output_handler.cpp',
 		'src/output.cpp',
 		'src/timer.cpp',
+		'src/child_handler.cpp',
 	],
 	include_directories: 'include',
 	dependencies: [

@@ -11,6 +11,7 @@ public:
 
     void spawn_swaybg();
     void transition(int new_picture);
+    void on_swaybg_died(int pid);
 
     bool operator==(const struct wl_output* output) const;
 
@@ -20,6 +21,7 @@ private:
     int picture;
     struct wl_output* output;
     pid_t swaybg_pid;
+    int retries;
 };
 
 #endif //BUILD_OUTPUT_H

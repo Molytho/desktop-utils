@@ -1,10 +1,15 @@
 #include "../include/output.h"
+#include "../include/child_handler.h"
 #include <cassert>
 #include <unistd.h>
 #include <cstring>
 #include <signal.h>
 #include <sys/wait.h>
+#include <sys/eventfd.h>
 #include <cstdio>
+#include <iostream>
+
+#define MAX_RETRIES 5
 
 void output_handle_geometry(void *data,
                  struct wl_output *wl_output,
@@ -54,18 +59,19 @@ const struct wl_output_listener output_listener = {
         .description = output_handle_description,
 };
 
-Output::Output(struct wl_output *output, int fd) : output_name(nullptr), picture(fd), output(output), swaybg_pid(0) {
+Output::Output(struct wl_output *output, int fd) : output_name(nullptr), picture(fd), output(output), swaybg_pid(0), retries(0) {
     wl_output_add_listener(output, &output_listener, this);
 }
 
 Output::~Output() {
     if (swaybg_pid > 0) {
-        kill(swaybg_pid, SIGTERM);
-        waitpid(swaybg_pid, nullptr, 0);
+        child_handler.shutdown_child(swaybg_pid);
     }
 }
 
 void Output::spawn_swaybg() {
+    int event_fd = eventfd(0, EFD_CLOEXEC);
+
     pid_t pid = fork();
     assert(pid >= 0);
     if (pid == 0) {
@@ -83,10 +89,16 @@ void Output::spawn_swaybg() {
             perror("Error while dupping fd to stdin");
             exit(EXIT_FAILURE);
         }
+
+        eventfd_t buffer;
+        eventfd_read(event_fd, &buffer);
         execvp(app, argv);
         exit(EXIT_FAILURE);
     } else {
+        child_handler.register_child(pid, *this);
         swaybg_pid = pid;
+        eventfd_write(event_fd, 1);
+        close(event_fd);
     }
 }
 
@@ -94,14 +106,27 @@ void Output::transition(int new_picture) {
     pid_t old_pid = swaybg_pid;
     picture = new_picture;
 
+    retries = 0;
     spawn_swaybg();
     sleep(1);
 
-    kill(old_pid, SIGTERM);
-    // TODO: TIMEOUT
-    waitpid(old_pid, nullptr, 0);
+    child_handler.shutdown_child(old_pid);
 }
 
 bool Output::operator==(const struct wl_output *output) const {
     return this->output == output;
+}
+
+void Output::on_swaybg_died(int pid) {
+    if (pid != this->swaybg_pid) {
+        std::cout << "Suspicious SIGCHLD" << std::endl;
+        return;
+    }
+
+    if (retries < MAX_RETRIES) {
+        retries++;
+        spawn_swaybg();
+    } else {
+        std::cerr << "swaybg failed to oftern" << std::endl;
+    }
 }

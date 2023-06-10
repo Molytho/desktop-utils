@@ -2,6 +2,7 @@
 #include "../include/output_handler.h"
 #include "../include/wayland.h"
 #include "../include/timer.h"
+#include "../include/child_handler.h"
 
 #include <iostream>
 #include <poll.h>
@@ -61,6 +62,7 @@ int main(int argc, char* argv[]) {
     OutputHandler outputHandler(pictures);
     Wayland wayland(outputHandler);
     Timer timer(outputHandler, args.minutes);
+    child_handler.init();
 
 
     outputHandlerRef = &outputHandler;
