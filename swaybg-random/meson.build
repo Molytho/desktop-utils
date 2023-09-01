@@ -1,8 +1,8 @@
 project(
 	'swaybg-random',
 	'cpp',
-	version: '0.1.1',
-	license: 'MIT',
+	version: '0.1.2',
+	license: 'GPLv3',
 	meson_version: '>=0.59.0',
 	default_options: [
 		'cpp_std=c++20',
