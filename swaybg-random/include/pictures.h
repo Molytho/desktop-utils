@@ -1,13 +1,14 @@
 #ifndef BUILD_PICTURES_H
 #define BUILD_PICTURES_H
 
-#include <filesystem>
 #include <deque>
 
 class Pictures {
 public:
     Pictures(const char* path);
-    int get_next_picture();
+
+    void next();
+    int get() const;
 
 private:
     std::deque<int> pictures; // file descriptors of the files

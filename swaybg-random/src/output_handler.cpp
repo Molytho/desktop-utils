@@ -5,7 +5,8 @@ OutputHandler::OutputHandler(Pictures &pictures) : pictures(pictures) {
 }
 
 void OutputHandler::add_output(struct wl_output *output) {
-    outputs.push_back(new Output(output, pictures.get_next_picture()));
+    outputs.push_back(new Output(output, pictures.get()));
+    pictures.next();
 }
 
 void OutputHandler::remove_output(struct wl_output *output) {
@@ -21,7 +22,8 @@ void OutputHandler::remove_output(struct wl_output *output) {
 
 void OutputHandler::next_picture() {
     auto next_output = outputs.front();
-    next_output->transition(pictures.get_next_picture());
+    next_output->transition(pictures.get());
+    pictures.next();
     outputs.push_back(next_output);
     outputs.pop_front();
 }

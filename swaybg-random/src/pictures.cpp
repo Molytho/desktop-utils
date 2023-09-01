@@ -1,11 +1,9 @@
 #include "../include/pictures.h"
 
-#include <unordered_set>
 #include <cstring>
 #include <algorithm>
 #include <random>
 
-#include <sys/types.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -58,10 +56,11 @@ Pictures::Pictures(const char* path) {
     std::shuffle(pictures.begin(), pictures.end(), random);
 }
 
-int Pictures::get_next_picture() {
-    int fd = pictures.front();
+void Pictures::next() {
+    pictures.push_back(pictures.front());
     pictures.pop_front();
-    pictures.push_back(fd);
+}
 
-    return fd;
+int Pictures::get() const {
+    return pictures.front();
 }
