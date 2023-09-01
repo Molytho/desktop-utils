@@ -78,20 +78,21 @@ void Output::spawn_swaybg() {
     pid_t pid = fork();
     assert(pid >= 0);
     if (pid == 0) {
-        char* app = "swaybg";
-        char* const argv[] = {
-                app,
-                "-o",
-                output_name,
-                "-i",
-                "/dev/stdin",
-                nullptr
-        };
         int result = dup2(picture, 0);
         if (result != 0) {
             perror("Error while dupping fd to stdin");
             exit(EXIT_FAILURE);
         }
+
+        const char* app = "swaybg";
+        char* const argv[] = {
+                strdup(app),
+                strdup("-o"),
+                output_name,
+                strdup("-i"),
+                strdup("/dev/stdin"),
+                nullptr
+        };
 
         eventfd_t buffer;
         eventfd_read(event_fd, &buffer);
@@ -130,6 +131,6 @@ void Output::on_swaybg_died(int pid) {
         retries++;
         spawn_swaybg();
     } else {
-        std::cerr << "swaybg failed to oftern" << std::endl;
+        std::cerr << "swaybg failed to often" << std::endl;
     }
 }
