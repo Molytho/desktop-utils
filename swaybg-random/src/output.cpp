@@ -67,6 +67,9 @@ Output::~Output() {
     if (swaybg_pid > 0) {
         child_handler.shutdown_child(swaybg_pid);
     }
+    assert(output_name);
+    free(output_name);
+    output_name = nullptr;
 }
 
 void Output::spawn_swaybg() {
