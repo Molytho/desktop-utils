@@ -80,6 +80,6 @@ void Wayland::handle_ready(int events) {
         wl_display_roundtrip(display);
         wl_display_prepare_read(display);
     } else {
-        assert (false);
+        abort();
     }
 }

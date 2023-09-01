@@ -6,18 +6,18 @@
 
 #include "output.h"
 
-class child_handler {
+class ChildHandler {
 public:
     void init();
     void register_child(int pid, Output& output);
     void shutdown_child(int pid);
-    void terminated(int pid);
+    void on_terminated(int pid);
 
 private:
     std::unordered_map<int, Output&> children;
     std::unordered_set<int> shuting_down;
 };
 
-extern class child_handler child_handler;
+extern class ChildHandler child_handler;
 
 #endif //SWAYBG_RANDOM_CHILD_HANDLER_H

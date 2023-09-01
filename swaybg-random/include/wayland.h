@@ -12,6 +12,7 @@ class Wayland : public LoopElement {
 public:
     explicit Wayland(OutputHandler& handler);
     ~Wayland();
+
     void add_output(uint32_t name);
     void remove_output(uint32_t name);
 

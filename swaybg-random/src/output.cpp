@@ -123,7 +123,6 @@ bool Output::operator==(const struct wl_output *output) const {
 
 void Output::on_swaybg_died(int pid) {
     if (pid != this->swaybg_pid) {
-        std::cout << "Suspicious SIGCHLD" << std::endl;
         return;
     }
 
