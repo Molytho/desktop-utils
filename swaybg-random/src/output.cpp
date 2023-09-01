@@ -66,10 +66,15 @@ Output::Output(struct wl_output *output, int fd) : output_name(nullptr), picture
 Output::~Output() {
     if (swaybg_pid > 0) {
         child_handler.shutdown_child(swaybg_pid);
+        swaybg_pid = 0;
     }
+
     assert(output_name);
     free(output_name);
     output_name = nullptr;
+
+    wl_output_destroy(output);
+    output = nullptr;
 }
 
 void Output::spawn_swaybg() {

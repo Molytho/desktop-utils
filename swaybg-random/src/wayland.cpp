@@ -9,7 +9,7 @@
 
 void registry_handle_global_remove(void* data, struct wl_registry* registry, uint32_t name) {
     auto* wayland = (Wayland*)data;
-    wayland->remove_output(name);
+    wayland->on_global_removed(name);
 }
 
 void registry_handle_global(void* data, struct wl_registry* registry, uint32_t name, const char* interface, uint32_t version) {
@@ -48,7 +48,6 @@ Wayland::~Wayland() {
 
     for (const auto& output : outputs) {
         outputHandler.remove_output(output.second);
-        wl_output_destroy(output.second);
     }
 
     wl_display_disconnect(display);
@@ -58,16 +57,14 @@ void Wayland::add_output(uint32_t name) {
     auto* output = (wl_output*)wl_registry_bind(registry, name, &wl_output_interface, 4);
     assert (output);
 
-    outputs.insert({name, output});
+    outputs.emplace(name, output);
     outputHandler.add_output(output);
 }
 
-void Wayland::remove_output(uint32_t name) {
-    struct wl_output* output = outputs[name];
-    outputHandler.remove_output(output);
+void Wayland::on_global_removed(uint32_t name) {
+    struct wl_output* output = outputs.at(name);
     outputs.erase(name);
-
-    wl_output_destroy(output);
+    outputHandler.remove_output(output);
 }
 
 void Wayland::handle_ready(int events) {

@@ -14,7 +14,7 @@ public:
     ~Wayland();
 
     void add_output(uint32_t name);
-    void remove_output(uint32_t name);
+    void on_global_removed(uint32_t name);
 
     void handle_ready(int events) final;
     inline void pre_loop() { wl_display_prepare_read(display); }

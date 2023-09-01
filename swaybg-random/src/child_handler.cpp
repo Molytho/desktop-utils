@@ -24,6 +24,7 @@ void ChildHandler::register_child(int pid, Output &output) {
 void ChildHandler::shutdown_child(int pid) {
     shuting_down.insert(pid);
     kill(pid, SIGTERM);
+    children.erase(pid);
 }
 
 void ChildHandler::on_terminated(int pid) {
