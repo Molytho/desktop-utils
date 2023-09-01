@@ -14,7 +14,7 @@
 bool run = true;
 OutputHandler* outputHandlerRef = nullptr;
 
-void handle_sigterm(int signo) {
+void handle_term(int signo) {
     run = false;
 }
 
@@ -32,9 +32,12 @@ void init_signals() {
     struct sigaction sigterm_action;
     sigterm_action.sa_flags = 0;
     sigemptyset(&sigterm_action.sa_mask);
-    sigterm_action.sa_handler = handle_sigterm;
+    sigterm_action.sa_handler = handle_term;
 
-    assert (!sigaction(SIGTERM, &sigterm_action, nullptr));
+    int res = sigaction(SIGTERM, &sigterm_action, nullptr);
+    assert(!res);
+    res = sigaction(SIGINT, &sigterm_action, nullptr);
+    assert(!res);
 
 
     struct sigaction sigusr1_action;
@@ -42,7 +45,8 @@ void init_signals() {
     sigemptyset(&sigusr1_action.sa_mask);
     sigusr1_action.sa_handler = handle_sigusr1;
 
-    assert (!sigaction(SIGUSR1, &sigusr1_action, nullptr));
+    res = sigaction(SIGUSR1, &sigusr1_action, nullptr);
+    assert(!res);
 }
 
 arguments parse_arguments(int argc, char* argv[]) {
