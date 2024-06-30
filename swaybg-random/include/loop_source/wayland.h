@@ -6,7 +6,7 @@
 #include <poll.h>
 #include <cassert>
 
-#include "new/wayland/display.h"
+#include "include/wayland/display.h"
 
 class wayland_source {
     std::shared_ptr<wayland::display> m_display;

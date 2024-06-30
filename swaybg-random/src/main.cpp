@@ -1,11 +1,11 @@
-#include "new/wayland/display.h"
-#include "new/wayland/output.h"
-#include "new/wayland/registry_manager.h"
+#include "wayland/display.h"
+#include "wayland/output.h"
+#include "wayland/registry_manager.h"
 
-#include "new/event_loop.h"
-#include "new/loop_source/timer.h"
-#include "new/loop_source/wayland.h"
-#include "new/loop_source/signal.h"
+#include "event_loop.h"
+#include "loop_source/timer.h"
+#include "loop_source/wayland.h"
+#include "loop_source/signal.h"
 
 #include <iostream>
 #include <sys/signalfd.h>

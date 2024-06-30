@@ -3,7 +3,7 @@
 
 #include "interface.h"
 #include "global.h"
-#include "new/function_object.h"
+#include "include/function_object.h"
 
 namespace wayland {
     template<>

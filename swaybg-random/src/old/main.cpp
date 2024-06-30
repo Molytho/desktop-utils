@@ -1,4 +1,4 @@
-#include "include/new/picture_manager.h"
+#include "include/picture_manager.h"
 #include "../include/output_handler.h"
 #include "../include/wayland.h"
 #include "../include/timer.h"
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
         display->roundtrip();
         while (true)
             display->dispatch();
-	}/*
+    }/*
 
     auto args = parse_arguments(argc, argv);
 

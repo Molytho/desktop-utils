@@ -1,4 +1,4 @@
-#include "../../../include/new/wayland/display.h"
+#include "wayland/display.h"
 
 namespace wayland {
     namespace {
