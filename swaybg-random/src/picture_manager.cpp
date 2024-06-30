@@ -1,4 +1,4 @@
-#include "include/picture_manager.h"
+#include "picture_manager.h"
 
 #include <cstring>
 #include <algorithm>
@@ -11,7 +11,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-#include "include/function_object.h"
+#include "function_object.h"
 
 namespace {
     constexpr std::array<std::string, 2> endings = {

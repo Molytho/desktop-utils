@@ -7,7 +7,7 @@
 
 #include "interface.h"
 #include "registry.h"
-#include "include/function_object.h"
+#include "function_object.h"
 
 namespace wayland {
     template<>

@@ -4,7 +4,7 @@
 #include <memory>
 #include <wayland-client.h>
 
-#include "include/function_object.h"
+#include "function_object.h"
 
 namespace wayland {
     template<class>

@@ -10,7 +10,7 @@
 #include <sys/signalfd.h>
 #include <cassert>
 
-#include "include/owning_fd.h"
+#include "owning_fd.h"
 
 constexpr size_t signalfd_siginfo_buffer_size = 4;
 

@@ -2,7 +2,7 @@
 #define SWAYBG_RANDOM_WAYLAND_REGISTRY_H
 
 #include "interface.h"
-#include "include/function_object.h"
+#include "function_object.h"
 
 namespace wayland {
     template<>
