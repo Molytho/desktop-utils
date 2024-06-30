@@ -1,11 +1,12 @@
-#ifndef SWAYBG_RANDOM_REGISTRY_H
-#define SWAYBG_RANDOM_REGISTRY_H
+#ifndef SWAYBG_RANDOM_WAYLAND_REGISTRY_H
+#define SWAYBG_RANDOM_WAYLAND_REGISTRY_H
 
 #include "interface.h"
+#include "new/function_object.h"
 
 namespace wayland {
     template<>
-    struct resource_delete<wl_registry> : public utils::function_object<wl_registry_destroy> {};
+    struct resource_delete<wl_registry> : public proxy_delete {};
 
     class registry : public interface<wl_registry> {
         using Base = interface<wl_registry>;
@@ -29,4 +30,4 @@ namespace wayland {
     };
 }
 
-#endif //SWAYBG_RANDOM_REGISTRY_H
+#endif //SWAYBG_RANDOM_WAYLAND_REGISTRY_H

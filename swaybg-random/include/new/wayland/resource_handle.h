@@ -1,10 +1,10 @@
-#ifndef SWAYBG_RANDOM_WAYLAND_UTILS_H
-#define SWAYBG_RANDOM_WAYLAND_UTILS_H
+#ifndef SWAYBG_RANDOM_WAYLAND_RESOURCE_HANDLE_H
+#define SWAYBG_RANDOM_WAYLAND_RESOURCE_HANDLE_H
 
 #include <memory>
 #include <wayland-client.h>
 
-#include "new/utils.h"
+#include "new/function_object.h"
 
 namespace wayland {
 	template<class>
@@ -12,6 +12,14 @@ namespace wayland {
 
 	template <class T>
 	using resource_handle = std::unique_ptr<T, resource_delete<T>>;
+
+	struct proxy_delete {
+		constexpr proxy_delete() = default;
+
+		constexpr void operator()(auto* object) const noexcept {
+			wl_proxy_destroy(reinterpret_cast<wl_proxy*>(object));
+		}
+	};
 }
 
-#endif //SWAYBG_RANDOM_WAYLAND_UTILS_H
+#endif //SWAYBG_RANDOM_WAYLAND_RESOURCE_HANDLE_H

@@ -31,7 +31,8 @@ void event_loop::run_helper(std::span<pollfd> pollfds) noexcept {
     }
 
     if (ret == -1 && error != EINTR && error != EAGAIN) {
-        throw std::system_error(error, std::system_category());
+	    perror("Unexpected error while polling: ");
+		std::abort();
     }
 }
 

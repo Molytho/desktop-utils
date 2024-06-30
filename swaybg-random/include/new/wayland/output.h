@@ -1,12 +1,13 @@
-#ifndef SWAYBG_RANDOM_OUTPUT_H
-#define SWAYBG_RANDOM_OUTPUT_H
+#ifndef SWAYBG_RANDOM_WAYLAND_OUTPUT_H
+#define SWAYBG_RANDOM_WAYLAND_OUTPUT_H
 
 #include "interface.h"
 #include "global.h"
+#include "new/function_object.h"
 
 namespace wayland {
     template<>
-    struct resource_delete<wl_output> : public utils::function_object<wl_output_destroy> {};
+    struct resource_delete<wl_output> : public proxy_delete {};
 
     class output : public global<wl_output> {
         using Base = global<wl_output>;
@@ -25,4 +26,4 @@ namespace wayland {
     };
 }
 
-#endif //SWAYBG_RANDOM_OUTPUT_H
+#endif //SWAYBG_RANDOM_WAYLAND_OUTPUT_H

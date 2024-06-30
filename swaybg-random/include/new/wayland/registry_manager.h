@@ -1,5 +1,5 @@
-#ifndef SWAYBG_RANDOM_REGISTRY_MANAGER_H
-#define SWAYBG_RANDOM_REGISTRY_MANAGER_H
+#ifndef SWAYBG_RANDOM_WAYLAND_REGISTRY_MANAGER_H
+#define SWAYBG_RANDOM_WAYLAND_REGISTRY_MANAGER_H
 
 #include <cstdint>
 #include <cstring>
@@ -16,8 +16,8 @@ namespace wayland {
     class interface_manager;
     template<class ifs>
     class interface_manager<ifs, interface_multiple_t> {
-        using interface_traits = interface_traits<ifs>;
-        using global = typename interface_traits::global;
+        using traits = interface_traits<ifs>;
+        using global = typename traits::global;
         using shared_global = std::shared_ptr<global>;
 
         std::vector<void (*)(const shared_global&)> m_added_listeners;
@@ -165,4 +165,4 @@ namespace wayland {
     };
 }
 
-#endif //SWAYBG_RANDOM_REGISTRY_MANAGER_H
+#endif //SWAYBG_RANDOM_WAYLAND_REGISTRY_MANAGER_H

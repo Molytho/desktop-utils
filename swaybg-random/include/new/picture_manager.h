@@ -1,5 +1,5 @@
-#ifndef BUILD_PICTURES_H
-#define BUILD_PICTURES_H
+#ifndef SWAYBG_RANDOM_PICTURE_MANAGER_H
+#define SWAYBG_RANDOM_PICTURE_MANAGER_H
 
 #include <vector>
 
@@ -22,4 +22,4 @@ public:
     [[nodiscard]] const picture &get() const;
 };
 
-#endif //BUILD_PICTURES_H
+#endif //SWAYBG_RANDOM_PICTURE_MANAGER_H

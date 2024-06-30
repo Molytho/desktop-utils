@@ -6,7 +6,7 @@ project(
 	meson_version: '>=0.59.0',
 	default_options: [
 		'cpp_std=c++20',
-		'warning_level=2',
+		'warning_level=3',
 		'werror=false',
 	],
 )

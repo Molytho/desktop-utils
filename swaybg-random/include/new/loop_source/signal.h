@@ -42,7 +42,8 @@ public:
                 });
             }
             if (errno != EAGAIN) {
-                throw std::system_error(errno, std::system_category());
+	            perror("Error while reading from signalfd: ");
+				std::abort();
             }
         }
         return true;

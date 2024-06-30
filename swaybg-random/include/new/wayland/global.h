@@ -1,5 +1,5 @@
-#ifndef SWAYBG_RANDOM_GLOBAL_H
-#define SWAYBG_RANDOM_GLOBAL_H
+#ifndef SWAYBG_RANDOM_WAYLAND_GLOBAL_H
+#define SWAYBG_RANDOM_WAYLAND_GLOBAL_H
 
 #include "interface.h"
 
@@ -22,4 +22,4 @@ namespace wayland {
 	};
 }
 
-#endif //SWAYBG_RANDOM_GLOBAL_H
+#endif //SWAYBG_RANDOM_WAYLAND_GLOBAL_H

@@ -1,5 +1,5 @@
-#ifndef SWAYBG_RANDOM_INTERFACE_H
-#define SWAYBG_RANDOM_INTERFACE_H
+#ifndef SWAYBG_RANDOM_WAYLAND_INTERFACE_H
+#define SWAYBG_RANDOM_WAYLAND_INTERFACE_H
 
 #include <concepts>
 #include <wayland-client.h>
@@ -70,4 +70,4 @@ namespace wayland {
     };
 }
 
-#endif //SWAYBG_RANDOM_INTERFACE_H
+#endif //SWAYBG_RANDOM_WAYLAND_INTERFACE_H

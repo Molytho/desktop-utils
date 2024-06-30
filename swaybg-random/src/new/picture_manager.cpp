@@ -11,7 +11,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-#include "new/utils.h"
+#include "new/function_object.h"
 
 namespace {
     constexpr std::array<std::string, 2> endings = {
@@ -26,7 +26,7 @@ namespace {
         });
     }
 
-    using dir_delete = utils::function_object<closedir>;
+    using dir_delete = function_object<closedir>;
 }
 
 void picture_manager::init_pictures(const char *path) {

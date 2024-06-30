@@ -1,5 +1,5 @@
-#ifndef SWAYBG_RANDOM_DISPLAY_H
-#define SWAYBG_RANDOM_DISPLAY_H
+#ifndef SWAYBG_RANDOM_WAYLAND_DISPLAY_H
+#define SWAYBG_RANDOM_WAYLAND_DISPLAY_H
 
 #include <system_error>
 #include <memory>
@@ -7,10 +7,11 @@
 
 #include "interface.h"
 #include "registry.h"
+#include "new/function_object.h"
 
 namespace wayland {
     template<>
-    struct resource_delete<wl_display> : public utils::function_object<wl_display_disconnect> {};
+    struct resource_delete<wl_display> : public function_object<wl_display_disconnect> {};
 
     class read_guard;
 
@@ -53,4 +54,4 @@ namespace wayland {
     std::shared_ptr<display> display_connect(int fd);
 }
 
-#endif //SWAYBG_RANDOM_DISPLAY_H
+#endif //SWAYBG_RANDOM_WAYLAND_DISPLAY_H

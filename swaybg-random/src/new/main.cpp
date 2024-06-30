@@ -10,7 +10,7 @@
 #include <iostream>
 #include <sys/signalfd.h>
 
-int main(int argc, char* argv[]) {
+int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     using namespace wayland;
     using registry_manager = registry_manager<wl_interface_info<wl_output, 4, 4>>;
 
