@@ -1,0 +1,25 @@
+#ifndef BUILD_PICTURES_H
+#define BUILD_PICTURES_H
+
+#include <vector>
+
+#include "owning_fd.h"
+
+using picture = owning_fd;
+
+
+class picture_manager {
+    size_t m_index {0};
+    std::vector<picture> m_pictures {};
+
+    void init_pictures(const char *path);
+
+public:
+    explicit picture_manager(const char *path);
+    picture_manager(const picture_manager&) = delete;
+
+    void next();
+    [[nodiscard]] const picture &get() const;
+};
+
+#endif //BUILD_PICTURES_H

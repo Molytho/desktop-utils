@@ -1,4 +1,4 @@
-#include "../include/pictures.h"
+#include "include/new/picture_manager.h"
 #include "../include/output_handler.h"
 #include "../include/wayland.h"
 #include "../include/timer.h"
@@ -8,6 +8,9 @@
 #include <poll.h>
 #include <csignal>
 #include <cassert>
+
+#include "../include/new/wayland/output.h"
+#include "../include/new/wayland/registry_manager.h"
 
 #define ARRAY_SIZE(array) (sizeof(array)/sizeof(*array))
 
@@ -60,6 +63,24 @@ arguments parse_arguments(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
+    {
+        using namespace wayland;
+        using registry_manager = registry_manager<wl_interface_info<wl_output, 4, 4>>;
+
+        auto display = display_connect();
+        registry_manager reg {display};
+        auto& manager = reg.get_manager<wl_output>();
+        manager.add_added_listener([](const auto& global) {
+            std::cout << "Added wl_output global with id " << global->get_id() << std::endl;
+        });
+        manager.add_removed_listener([](const auto& global) {
+            std::cout << "Removed wl_output global with id " << global->get_id() << std::endl;
+        });
+        display->roundtrip();
+        while (true)
+            display->dispatch();
+	}/*
+
     auto args = parse_arguments(argc, argv);
 
     Pictures pictures(args.directory_path);
@@ -107,5 +128,5 @@ int main(int argc, char* argv[]) {
     }
     wayland.post_loop();
 
-    outputHandlerRef = nullptr;
+    outputHandlerRef = nullptr;*/
 }

@@ -1,13 +1,13 @@
-#include "../include/output.h"
-#include "../include/child_handler.h"
+#include "output.h"
+
 #include <cassert>
 #include <unistd.h>
 #include <cstring>
-#include <signal.h>
-#include <sys/wait.h>
 #include <sys/eventfd.h>
 #include <cstdio>
 #include <iostream>
+
+#include "child_handler.h"
 
 #define MAX_RETRIES 5
 

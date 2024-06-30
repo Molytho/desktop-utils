@@ -1,0 +1,73 @@
+#ifndef SWAYBG_RANDOM_EVENT_LOOP_H
+#define SWAYBG_RANDOM_EVENT_LOOP_H
+
+#include <vector>
+#include <memory>
+#include <functional>
+#include <span>
+#include <poll.h>
+
+#include "owning_fd.h"
+
+// TODO: Maybe an add method instead of fd and mask
+template<class T, class Callback>
+concept event_source = requires(const T a, short s, const Callback& callback) {
+    { a.fd } -> std::convertible_to<int>;
+    { a.mask } -> std::convertible_to<short>;
+    { a.pre_sleep() } noexcept;
+    { a.post_sleep(s, callback) } noexcept -> std::convertible_to<bool>;
+} && std::move_constructible<T> && std::move_constructible<Callback>;
+
+namespace detail {
+    struct loop_element {
+        const int fd;
+        const short mask;
+
+        loop_element(int fd, short mask) : fd{fd}, mask{mask} {}
+        virtual ~loop_element() = default;
+
+        virtual void pre_sleep() noexcept = 0;
+        virtual void post_sleep(short events) noexcept = 0;
+    };
+
+    template<class Callback, class Source>
+        requires event_source<Source, Callback>
+    class event_source_wrapper : public loop_element {
+        Source m_source;
+        [[no_unique_address]] Callback m_callback;
+
+    public:
+        event_source_wrapper(Source source, Callback callback) : loop_element{source.fd, source.mask}, m_source{std::move(source)}, m_callback{std::move(callback)} {}
+        ~event_source_wrapper() override = default;
+
+        void pre_sleep() noexcept override {
+            m_source.pre_sleep();
+        }
+        void post_sleep(short events) noexcept override {
+            m_source.post_sleep(events, m_callback);
+        }
+    };
+}
+
+class event_loop {
+    std::vector<std::unique_ptr<detail::loop_element>> m_loop_items {};
+    bool m_running {false};
+    bool m_should_stop {false};
+
+    std::vector<pollfd> setup_pollfds() noexcept;
+    void run_helper(std::span<pollfd> pollfds) noexcept;
+
+public:
+    void run_once();
+    void run();
+    void stop();
+
+    template<class Callback>
+    void add_item(event_source<Callback> auto source, Callback callback) {
+        std::unique_ptr<detail::loop_element> loop_element
+            = std::make_unique<detail::event_source_wrapper<Callback, decltype(source)>>(std::move(source), std::move(callback));
+        m_loop_items.push_back(std::move(loop_element));
+    }
+};
+
+#endif //SWAYBG_RANDOM_EVENT_LOOP_H

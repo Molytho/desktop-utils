@@ -7,36 +7,32 @@ project(
 	default_options: [
 		'cpp_std=c++20',
 		'warning_level=2',
-		'werror=true',
+		'werror=false',
 	],
-)
-
-add_project_arguments(
-	[
-		'-Wno-unused-parameter',
-		'-Wno-unused-result',
-		'-Wundef',
-		'-Wvla',
-		'-Wno-error=write-strings'
-	],
-	language: 'cpp',
 )
 
 cpp = meson.get_compiler('cpp')
 
 wayland_client = dependency('wayland-client')
 
+src = [
+#	'src/main.cpp',
+#	'src/wayland.cpp',
+#	'src/output_handler.cpp',
+#	'src/output.cpp',
+#	'src/timer.cpp',
+#	'src/child_handler.cpp',
+    'src/new/main.cpp',
+    'src/new/event_loop.cpp',
+	'src/new/picture_manager.cpp',
+    'src/new/wayland/display.cpp',
+	'src/new/loop_source/timer.cpp',
+	'src/new/loop_source/signal.cpp'
+]
+
 executable(
 	'swaybg-random',
-	[
-		'src/main.cpp',
-		'src/wayland.cpp',
-		'src/pictures.cpp',
-		'src/output_handler.cpp',
-		'src/output.cpp',
-		'src/timer.cpp',
-		'src/child_handler.cpp',
-	],
+	src,
 	include_directories: 'include',
 	dependencies: [
 		wayland_client,

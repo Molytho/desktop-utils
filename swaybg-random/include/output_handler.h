@@ -5,7 +5,7 @@
 #include <deque>
 #include <memory>
 #include "output.h"
-#include "pictures.h"
+#include "include/new/picture_manager.h"
 
 class OutputHandler {
 public:
