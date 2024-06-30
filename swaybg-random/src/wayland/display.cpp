@@ -12,10 +12,10 @@ namespace wayland {
         }
     }
 
-    std::shared_ptr<display> display_connect(const char *name) {
+    std::shared_ptr<display> connect(const char *name) {
         return std::make_shared<display>(name);
     }
-    std::shared_ptr<display> display_connect(int fd) {
+    std::shared_ptr<display> connect(int fd) {
         return std::make_shared<display>(fd);
     }
 

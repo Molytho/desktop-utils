@@ -50,8 +50,8 @@ namespace wayland {
         void read();
     };
 
-    std::shared_ptr<display> display_connect(const char *name = nullptr);
-    std::shared_ptr<display> display_connect(int fd);
+    std::shared_ptr<display> connect(const char *name = nullptr);
+    std::shared_ptr<display> connect(int fd);
 }
 
 #endif //SWAYBG_RANDOM_WAYLAND_DISPLAY_H

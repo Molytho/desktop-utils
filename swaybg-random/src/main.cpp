@@ -8,28 +8,54 @@
 #include "loop_source/signal.h"
 
 #include <iostream>
+#include <charconv>
 #include <sys/signalfd.h>
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
-    using namespace wayland;
-    using registry_manager = registry_manager<wl_interface_info<wl_output, 4, 4>>;
+namespace {
+    std::chrono::seconds parse_time_argument(const char *arg) {
+        size_t size = strlen(arg);
 
-    auto display = display_connect();
+        uint32_t value {};
+        if (std::from_chars(arg, arg + size, value).ec == std::errc{}) {
+            return std::chrono::minutes {value};
+        } else {
+            std::cerr << "Invalid minutes argument" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    }
+
+    std::pair<const char*, std::chrono::seconds> parse_arguments(int argc, char* argv[]) {
+        if (argc != 3) {
+            std::cerr << "Invalid arguments." << std::endl;
+            std::cerr << "Usage: swaybg-random <dir-path> <minutes>" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+
+        return std::make_pair(argv[1], parse_time_argument(argv[2]));
+    }
+
+    using registry_manager = wayland::registry_manager<wayland::wl_interface_info<wl_output, 4, 4>>;
+}
+
+int main(int argc, char* argv[]) {
+    auto [path, seconds] = parse_arguments(argc, argv);
+
+    auto display = wayland::connect();
     registry_manager reg {display};
-    auto& manager = reg.get_manager<wl_output>();
-    manager.add_added_listener([](const auto& global) {
+
+    auto& output_manager = reg.get_manager<wl_output>();
+    output_manager.add_added_listener([](const auto& global) {
         std::cout << "Added wl_output global with id " << global->get_id() << std::endl;
     });
-    manager.add_removed_listener([](const auto& global) {
+    output_manager.add_removed_listener([](const auto& global) {
         std::cout << "Removed wl_output global with id " << global->get_id() << std::endl;
     });
 
     event_loop main_loop;
-    main_loop.add_item(wayland_source{display}, read_and_dispatch);
+    main_loop.add_item(wayland_source{display}, wayland::read_and_dispatch);
     {
-        using namespace std::chrono_literals;
         timer timer_source{};
-        timer_source.start(1s);
+        timer_source.start(seconds);
 
         main_loop.add_item(std::move(timer_source), [](uint64_t) {
             static uint64_t prev = 0;
