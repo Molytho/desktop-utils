@@ -43,11 +43,11 @@ public:
 };
 
 namespace wayland {
-    bool read_and_dispatch(display& display, read_guard& guard) {
+    constexpr auto read_and_dispatch = [](display& display, read_guard& guard) {
         guard.read();
         display.dispatch_pending();
         return true;
-    }
+    };
 }
 
 #endif //SWAYBG_RANDOM_WAYLAND_H
