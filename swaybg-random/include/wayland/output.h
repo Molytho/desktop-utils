@@ -14,6 +14,10 @@ namespace wayland {
 
     public:
         using Base::Base;
+
+        void set_listeners(const wl_output_listener *listeners, void *data = nullptr) {
+            wl_output_add_listener(m_handle.get(), listeners, data);
+        }
     };
 
     template<>

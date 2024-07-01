@@ -19,6 +19,7 @@ src = [
     'src/main.cpp',
     'src/event_loop.cpp',
     'src/picture_manager.cpp',
+    'src/background_manager.cpp',
 
     'src/wayland/display.cpp',
 

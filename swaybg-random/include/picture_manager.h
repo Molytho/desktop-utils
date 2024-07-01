@@ -17,6 +17,7 @@ class picture_manager {
 public:
     explicit picture_manager(const char *path);
     picture_manager(const picture_manager&) = delete;
+    picture_manager(picture_manager&&) = default;
 
     void next();
     [[nodiscard]] const picture &get() const;

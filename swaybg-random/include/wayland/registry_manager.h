@@ -6,6 +6,7 @@
 #include <vector>
 #include <span>
 #include <tuple>
+#include <functional>
 
 #include "interface.h"
 #include "registry.h"
@@ -20,8 +21,8 @@ namespace wayland {
         using global = typename traits::global;
         using shared_global = std::shared_ptr<global>;
 
-        std::vector<void (*)(const shared_global&)> m_added_listeners;
-        std::vector<void (*)(const shared_global&)> m_removed_listeners;
+        std::vector<std::function<void (const shared_global&)>> m_added_listeners;
+        std::vector<std::function<void (const shared_global&)>> m_removed_listeners;
         std::vector<shared_global> m_objects;
 
     public:
@@ -61,10 +62,10 @@ namespace wayland {
             m_objects.erase(pos);
         }
 
-        constexpr void add_added_listener(void (*callback)(const shared_global&)) {
+        constexpr void add_added_listener(std::function<void (const shared_global&)> callback) {
             m_added_listeners.push_back(callback);
         }
-        constexpr void add_removed_listener(void (*callback)(const shared_global&)) {
+        constexpr void add_removed_listener(std::function<void (const shared_global&)> callback) {
             m_removed_listeners.push_back(callback);
         }
 

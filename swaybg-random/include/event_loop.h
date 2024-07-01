@@ -81,8 +81,7 @@ public:
         return static_cast<Wrapper*>(m_loop_items.back().get());
     }
 
-    template<class Callback, event_source<Callback> Source>
-    void remove_item(token<Callback, Source> wrapper) {
+    void remove_item(detail::loop_element *wrapper) {
         erase_if(m_loop_items, [&wrapper](const auto& element) {
             return element.get() == wrapper;
         });
