@@ -41,6 +41,9 @@ public:
         return m_fd;
     }
 
+    [[nodiscard]] ssize_t read(auto& variable) const noexcept {
+        return read(std::as_writable_bytes(std::span{&variable, 1}));
+    }
     [[nodiscard]] ssize_t read(std::span<std::byte> buffer) const noexcept {
         return ::read(m_fd, buffer.data(), buffer.size_bytes());
     }

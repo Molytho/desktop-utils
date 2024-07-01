@@ -10,12 +10,14 @@
 
 class timer {
     owning_fd m_timerfd;
+    itimerspec m_current_spec {};
 
 public:
     timer();
 
     void start(std::chrono::seconds seconds, bool auto_restart = true);
     void stop();
+    void reset();
 
     // event_source implementation
     const int fd;
@@ -29,7 +31,7 @@ public:
             exit(EXIT_FAILURE);
         } else if (events & POLLIN) {
             uint64_t expiration_count;
-            int res = m_timerfd.read(std::as_writable_bytes(std::span{&expiration_count, 1}));
+            ssize_t res = m_timerfd.read(expiration_count);
             if (res == -1) {
                 perror("Error at timerfd read");
             }

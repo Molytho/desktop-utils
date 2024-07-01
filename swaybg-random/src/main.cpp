@@ -54,10 +54,7 @@ int main(int argc, char* argv[]) {
     event_loop main_loop;
     main_loop.add_item(wayland_source{display}, wayland::read_and_dispatch);
     {
-        timer timer_source{};
-        timer_source.start(seconds);
-
-        main_loop.add_item(std::move(timer_source), [](uint64_t) {
+        auto token = main_loop.add_item(timer{}, [](uint64_t) {
             static uint64_t prev = 0;
             uint64_t now = std::chrono::system_clock::now().time_since_epoch().count();
             uint64_t diff = now - prev;
@@ -65,6 +62,7 @@ int main(int argc, char* argv[]) {
             prev = now;
             return true;
         });
+        main_loop[token].first.start(seconds);
     }
     {
         std::array signals = {SIGTERM, SIGUSR1};

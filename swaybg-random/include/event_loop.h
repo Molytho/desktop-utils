@@ -46,6 +46,13 @@ namespace detail {
         void post_sleep(short events) noexcept override {
             m_source.post_sleep(events, m_callback);
         }
+
+        constexpr Source &get_source() noexcept {
+            return m_source;
+        }
+        constexpr Callback &get_callback() noexcept {
+            return m_callback;
+        }
     };
 }
 
@@ -58,15 +65,32 @@ class event_loop {
     void run_helper(std::span<pollfd> pollfds) noexcept;
 
 public:
+    template<class Callback, event_source<Callback> Source>
+    using token = detail::event_source_wrapper<Callback, Source>*;
+
     void run_once();
     void run();
     void stop();
 
-    template<class Callback>
-    void add_item(event_source<Callback> auto source, Callback callback) {
+    template<class Callback, event_source<Callback> Source>
+    token<Callback, Source> add_item(Source source, Callback callback) {
+        using Wrapper = detail::event_source_wrapper<Callback, Source>;
         std::unique_ptr<detail::loop_element> loop_element
-            = std::make_unique<detail::event_source_wrapper<Callback, decltype(source)>>(std::move(source), std::move(callback));
+            = std::make_unique<Wrapper>(std::move(source), std::move(callback));
         m_loop_items.push_back(std::move(loop_element));
+        return static_cast<Wrapper*>(m_loop_items.back().get());
+    }
+
+    template<class Callback, event_source<Callback> Source>
+    void remove_item(token<Callback, Source> wrapper) {
+        erase_if(m_loop_items, [&wrapper](const auto& element) {
+            return element.get() == wrapper;
+        });
+    }
+
+    template<class Callback, event_source<Callback> Source>
+    [[nodiscard]] constexpr std::pair<Source&, Callback&> operator[](token<Callback, Source> token) {
+        return {token->get_source(), token->get_callback()};
     }
 };
 

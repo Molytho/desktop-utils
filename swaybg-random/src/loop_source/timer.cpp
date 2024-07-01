@@ -10,18 +10,26 @@ timer::timer() : m_timerfd{timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC)}, fd{m_t
 }
 
 void timer::start(std::chrono::seconds seconds, bool auto_restart) {
-    struct itimerspec timer_settings {};
-    timer_settings.it_value = {
+    if (seconds.count() == 0) {
+        throw std::invalid_argument{"Should start timer with 0 seconds"};
+    }
+
+    m_current_spec = {};
+    m_current_spec.it_value = {
         .tv_sec = seconds.count(),
         .tv_nsec = 0
     };
     if (auto_restart) {
-        timer_settings.it_interval = timer_settings.it_value;
+        m_current_spec.it_interval = m_current_spec.it_value;
     }
-    timerfd_settime(fd, 0, &timer_settings, nullptr);
+    timerfd_settime(fd, 0, &m_current_spec, nullptr);
 }
 
 void timer::stop() {
-    struct itimerspec timer_settings {};
-    timerfd_settime(fd, 0, &timer_settings, nullptr);
+    m_current_spec = {};
+    timerfd_settime(fd, 0, &m_current_spec, nullptr);
+}
+
+void timer::reset() {
+    timerfd_settime(fd, 0, &m_current_spec, nullptr);
 }
