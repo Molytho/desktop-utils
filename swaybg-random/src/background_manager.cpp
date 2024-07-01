@@ -2,7 +2,6 @@
 
 #include <system_error>
 #include <csignal>
-#include <sys/eventfd.h>
 #include <cstring>
 #include <cassert>
 #include <algorithm>
@@ -10,7 +9,7 @@
 namespace {
     constexpr std::string swaybg_name = "swaybg";
 
-    [[noreturn]] void spawn_child(owning_fd event_fd, int picture_fd, char *output_name) {
+    [[noreturn]] void spawn_child(int picture_fd, char *output_name) {
         if(dup2(picture_fd, 0) == -1) {
             perror("Error while dupping fd to stdin");
             exit(EXIT_FAILURE);
@@ -29,8 +28,6 @@ namespace {
             nullptr
         };
 
-        eventfd_t buffer;
-        eventfd_read(event_fd, &buffer);
         execvp(swaybg_name.c_str(), argv.data());
         perror("execvp failed:");
         exit(EXIT_FAILURE);
@@ -48,19 +45,16 @@ output::~output() {
     }
 }
 
-void output::spawn_swaybg() {
+void output::spawn_swaybg() const {
     assert(m_picture);
-
-    owning_fd event_fd {eventfd(0, EFD_CLOEXEC)};
 
     pid_t pid = fork();
     if (pid < 0) {
         throw std::system_error(errno, std::system_category());
     } else if (pid > 0) {
         m_swaybg_pid = pid;
-        eventfd_write(event_fd, 1);
     } else {
-        spawn_child(std::move(event_fd), *m_picture, strdup(m_name.c_str()));
+        spawn_child(*m_picture, strdup(m_name.c_str()));
     }
 }
 
@@ -74,7 +68,7 @@ void output::set_background(const picture &pic) {
     }
 }
 
-void output::on_child_died(int32_t) {
+void output::on_child_died(int32_t) const {
     m_swaybg_pid = -1;
     spawn_swaybg();
 }
@@ -93,7 +87,7 @@ void background_manager::add_output(output output) {
 }
 
 void background_manager::remove_output(uint32_t id) {
-    auto pos = std::find_if(std::begin(m_outputs), std::end(m_outputs), [&id](const output& output) {
+    auto pos = std::find_if(std::begin(m_outputs), std::end(m_outputs), [id](const output& output) {
         return output.id() == id;
     });
     if (pos == std::end(m_outputs)) {
@@ -117,7 +111,6 @@ void background_manager::on_timer_expired() {
         m_end_pos = m_outputs.end();
         assert(m_current_pos != m_end_pos);
     }
-
 
     m_current_pos->set_background(get_next_picture());
     ++m_current_pos;

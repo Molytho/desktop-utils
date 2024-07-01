@@ -7,20 +7,24 @@
 
 using picture = owning_fd;
 
-
 class picture_manager {
     size_t m_index {0};
-    std::vector<picture> m_pictures {};
+    std::vector<picture> m_pictures;
 
-    void init_pictures(const char *path);
+    static std::vector<picture> build_pictures(const char *path);
 
 public:
-    explicit picture_manager(const char *path);
+    explicit picture_manager(const char *path) : m_pictures{build_pictures(path)} { }
     picture_manager(const picture_manager&) = delete;
     picture_manager(picture_manager&&) = default;
 
-    void next();
-    [[nodiscard]] const picture &get() const;
+    constexpr void next() {
+        ++m_index;
+        m_index %= m_pictures.size();
+    }
+    [[nodiscard]] constexpr const picture &get() const {
+        return m_pictures.at(m_index);
+    }
 };
 
 #endif //SWAYBG_RANDOM_PICTURE_MANAGER_H

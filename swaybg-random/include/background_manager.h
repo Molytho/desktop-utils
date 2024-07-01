@@ -7,38 +7,39 @@
 #include "wayland/output.h"
 
 class output {
-    pid_t m_swaybg_pid {-1};
-    const picture *m_picture {};
+    mutable pid_t m_swaybg_pid {-1};
     uint32_t m_id;
+    const picture *m_picture {};
     std::string m_name;
 
-    void spawn_swaybg();
+    void spawn_swaybg() const;
 
 public:
-    explicit output(uint32_t id, std::string name) : m_id{id}, m_name{std::move(name)} { }
+    explicit constexpr output(uint32_t id, std::string name) : m_id{id}, m_name{std::move(name)} { }
     ~output();
 
     output(const output&) = delete;
 
-    output(output&& other) noexcept : m_swaybg_pid{other.m_swaybg_pid}, m_picture{other.m_picture}, m_id{other.m_id}, m_name{other.m_name} {
+    constexpr output(output&& other) noexcept : m_swaybg_pid{other.m_swaybg_pid}, m_id{other.m_id}, m_picture{other.m_picture}, m_name{std::move(other.m_name)} {
         other.m_swaybg_pid = -1;
+        other.m_id = 0;
         other.m_picture = nullptr;
     }
-    output& operator=(output&& other) noexcept {
+    constexpr output& operator=(output&& other) noexcept {
         m_swaybg_pid = other.m_swaybg_pid;
-        m_picture = other.m_picture;
         m_id = other.m_id;
+        m_picture = other.m_picture;
         m_name = std::move(other.m_name);
 
         other.m_swaybg_pid = -1;
-        other.m_picture = nullptr;
         other.m_id = 0;
+        other.m_picture = nullptr;
 
         return *this;
     }
 
     void set_background(const picture& pic);
-    void on_child_died(int32_t status);
+    void on_child_died(int32_t status) const;
 
     [[nodiscard]] constexpr const pid_t &child_pid() const noexcept {
         return m_swaybg_pid;
@@ -69,11 +70,8 @@ public:
     void add_output(output output);
     void remove_output(uint32_t id);
 
-    iterator begin() {
-        return m_outputs.begin();
-    }
-    iterator end() {
-        return m_outputs.end();
+    [[nodiscard]] constexpr std::span<const output> outputs() const noexcept {
+        return m_outputs;
     }
 };
 

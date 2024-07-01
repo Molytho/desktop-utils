@@ -20,26 +20,33 @@ public:
     const short mask {POLLIN};
 
     void pre_sleep() const noexcept {
-        m_display->flush(); //TODO Lookup correct usage
         while (!(m_guard = m_display->prepare_read())) {
             m_display->dispatch_pending();
-            m_display->flush();
         }
+        m_display->flush();
     }
-    bool post_sleep(short events, const auto& callback) const noexcept {
+
+    template<class Callback>
+        requires std::is_invocable_r_v<bool, Callback, wayland::display&, wayland::read_guard&>
+    bool post_sleep(short events, const Callback& callback) const noexcept {
         assert(m_guard);
-        if (events & POLLIN) {
-            callback(*m_display, *m_guard);
+        wayland::read_guard guard = *std::move(m_guard);
+        if (events & POLLERR) {
+            std::cerr << "Error on wayland fd" << std::endl;
+            exit(EXIT_FAILURE);
+        } else if (events & POLLIN) {
+            return callback(*m_display, guard);
+        } else {
+            return true;
         }
-        m_guard.reset();
-        return true;
     }
 };
 
 namespace wayland {
-    void read_and_dispatch(display& display, read_guard& guard) {
+    bool read_and_dispatch(display& display, read_guard& guard) {
         guard.read();
         display.dispatch_pending();
+        return true;
     }
 }
 

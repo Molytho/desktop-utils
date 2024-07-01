@@ -11,7 +11,7 @@ timer::timer() : m_timerfd{timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC)}, fd{m_t
 
 void timer::start(std::chrono::seconds seconds, bool auto_restart) {
     if (seconds.count() == 0) {
-        throw std::invalid_argument{"Should start timer with 0 seconds"};
+        throw std::invalid_argument{"Request to start timer with 0 seconds"};
     }
 
     m_current_spec = {};

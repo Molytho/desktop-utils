@@ -1,14 +1,14 @@
 #ifndef SWAYBG_RANDOM_SIGNAL_H
 #define SWAYBG_RANDOM_SIGNAL_H
 
-#include <csignal>
 #include <poll.h>
+#include <sys/signalfd.h>
+#include <cassert>
+#include <csignal>
 #include <span>
 #include <system_error>
 #include <algorithm>
 #include <iostream>
-#include <sys/signalfd.h>
-#include <cassert>
 
 #include "owning_fd.h"
 
@@ -25,7 +25,10 @@ public:
     const short mask {POLLIN};
 
     void pre_sleep() const noexcept { }
-    bool post_sleep(short events, const auto& callback) const noexcept {
+
+    template<class Callback>
+        requires std::invocable<Callback, const signalfd_siginfo&>
+    bool post_sleep(short events, const Callback& callback) const noexcept {
         if (events & POLLERR) {
             std::cerr << "Error on timerfd" << std::endl;
             exit(EXIT_FAILURE);
@@ -37,7 +40,7 @@ public:
             while ((bytes_read = m_signalfd.read(std::as_writable_bytes(std::span{siginfos}))) != -1) {
                 assert(bytes_read % sizeof(signalfd_siginfo) == 0 && bytes_read > 0);
                 size_t count = bytes_read / sizeof(signalfd_siginfo);
-                std::for_each_n(siginfos.begin(), count, [&](signalfd_siginfo& info) {
+                std::for_each_n(siginfos.begin(), count, [&](const signalfd_siginfo& info) {
                     callback(info);
                 });
             }

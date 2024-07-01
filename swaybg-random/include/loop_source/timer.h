@@ -1,10 +1,10 @@
 #ifndef SWAYBG_RANDOM_TIMER_H
 #define SWAYBG_RANDOM_TIMER_H
 
-#include <chrono>
-#include <functional>
 #include <poll.h>
+#include <chrono>
 #include <iostream>
+#include <type_traits>
 
 #include "owning_fd.h"
 
@@ -25,7 +25,9 @@ public:
 
     void pre_sleep() const noexcept { }
 
-    bool post_sleep(short events, const auto& callback) const noexcept {
+    template<class Callback>
+        requires std::is_invocable_r_v<bool, Callback, uint64_t>
+    bool post_sleep(short events, const Callback& callback) const noexcept {
         if (events & POLLERR) {
             std::cerr << "Error on timerfd" << std::endl;
             exit(EXIT_FAILURE);

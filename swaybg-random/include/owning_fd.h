@@ -15,29 +15,32 @@ public:
             throw std::invalid_argument("fd is not a valid file descriptor");
         }
     }
-    owning_fd(const owning_fd&) = delete;
-    owning_fd(owning_fd&& other) noexcept {
-        reset(other.m_fd);
-        other.m_fd = -1;
-    }
-    ~owning_fd() {
+    constexpr ~owning_fd() {
         reset();
     }
 
-    owning_fd &operator=(owning_fd&& other) noexcept {
+
+    owning_fd(const owning_fd&) = delete;
+    owning_fd &operator=(const owning_fd&) = delete;
+
+    constexpr owning_fd(owning_fd&& other) noexcept {
+        reset(other.m_fd);
+        other.m_fd = -1;
+    }
+    constexpr owning_fd &operator=(owning_fd&& other) noexcept {
         reset(other.m_fd);
         other.m_fd = -1;
         return *this;
     }
 
-    void reset(int fd = -1) noexcept {
+    constexpr void reset(int fd = -1) noexcept {
         if (m_fd != -1) {
             close(m_fd);
         }
         m_fd = fd;
     }
 
-    operator int() const noexcept {
+    constexpr operator int() const noexcept {
         return m_fd;
     }
 

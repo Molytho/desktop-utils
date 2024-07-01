@@ -27,8 +27,8 @@ signal_source::signal_source(std::span<const int> signals) : fd{} {
     for (const int& signal : signals) {
         sigset += signal;
     }
-    //TODO: Error handling
-    sigprocmask(SIG_BLOCK, &sigset, nullptr);
+    [[maybe_unused]] int res = sigprocmask(SIG_BLOCK, &sigset, nullptr);
+    assert(res == 0);
 
     m_signalfd = make_signalfd(sigset);
     const_cast<int&>(fd) = m_signalfd;

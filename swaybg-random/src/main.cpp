@@ -79,7 +79,7 @@ namespace {
                 loop[timer_token].first.reset();
             } else if (info.ssi_signo == SIGCHLD) {
                 auto pid = static_cast<pid_t>(info.ssi_pid);
-                for (auto& output: manager) {
+                for (auto& output: manager.outputs()) {
                     if (output.child_pid() == pid) {
                         output.on_child_died(info.ssi_status);
                         break;
