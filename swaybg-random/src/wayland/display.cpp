@@ -1,5 +1,7 @@
 #include "wayland/display.h"
 
+#include <system_error>
+
 namespace wayland {
     namespace {
         template<int Func(wl_display*)>

@@ -4,8 +4,6 @@
 #include <memory>
 #include <wayland-client.h>
 
-#include "function_object.h"
-
 namespace wayland {
     template<class>
     struct resource_delete;

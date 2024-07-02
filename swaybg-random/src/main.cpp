@@ -38,7 +38,7 @@ namespace {
     }
 
 
-    using registry_manager = wayland::registry_manager<wayland::wl_interface_info<wl_output, 4, 4>>;
+    using registry_manager = wayland::registry_manager<wayland::interface_info<wl_output, 4>>;
 
     void noop(auto...) {}
     void output_handle_name(void *data,

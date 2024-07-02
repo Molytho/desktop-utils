@@ -1,7 +1,6 @@
 #ifndef SWAYBG_RANDOM_WAYLAND_DISPLAY_H
 #define SWAYBG_RANDOM_WAYLAND_DISPLAY_H
 
-#include <system_error>
 #include <memory>
 #include <optional>
 

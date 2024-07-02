@@ -3,51 +3,34 @@
 
 #include <cstdint>
 #include <cstring>
-#include <vector>
+#include <concepts>
 #include <span>
 #include <tuple>
-#include <functional>
 
-#include "interface.h"
-#include "registry.h"
-#include "display.h"
+#include <wayland-client.h>
+
+#include "global.h"
+#include "concepts.h"
 
 namespace wayland {
-    template<class ifs, class = interface_traits<ifs>::uniqueness>
+    template<class ifs>
     class interface_manager;
     template<class ifs>
-    class interface_manager<ifs, interface_multiple_t> {
+        requires std::same_as<typename interface_traits<ifs>::uniqueness, interface_multiple_t>
+    class interface_manager<ifs> {
         using traits = interface_traits<ifs>;
         using global = typename traits::global;
         using shared_global = std::shared_ptr<global>;
 
-        std::vector<std::function<void (const shared_global&)>> m_added_listeners;
-        std::vector<std::function<void (const shared_global&)>> m_removed_listeners;
-        std::vector<shared_global> m_objects;
+        std::vector<std::function<void (const shared_global&)>> m_added_listeners {};
+        std::vector<std::function<void (const shared_global&)>> m_removed_listeners {};
+        std::vector<shared_global> m_objects {};
 
     public:
         constexpr interface_manager() = default;
         interface_manager(const interface_manager&) = delete;
 
         using const_iterator = std::vector<shared_global>::const_iterator;
-
-        std::span<const shared_global> get() const {
-            return std::span {m_objects.cbegin(), m_objects.cend()};
-        }
-
-        constexpr const_iterator cbegin() const noexcept {
-            return m_objects.cbegin();
-        }
-        constexpr const_iterator cend() const noexcept {
-            return m_objects.cend();
-        }
-
-        constexpr const_iterator begin() const noexcept {
-            return cbegin();
-        }
-        constexpr const_iterator end() const noexcept {
-            return cend();
-        }
 
         constexpr void add_global(shared_global object) {
             m_objects.push_back(std::move(object));
@@ -62,6 +45,11 @@ namespace wayland {
             m_objects.erase(pos);
         }
 
+        //TODO: Figure out constness
+        constexpr const std::vector<shared_global> globals() {
+            return m_objects;
+        }
+
         constexpr void add_added_listener(std::function<void (const shared_global&)> callback) {
             m_added_listeners.push_back(callback);
         }
@@ -71,32 +59,36 @@ namespace wayland {
 
     };
     template<class ifs>
-    class interface_manager<ifs, interface_unique_t> {
+        requires std::same_as<typename interface_traits<ifs>::uniqueness, interface_unique_t>
+    class interface_manager<ifs> {
         static_assert(false);
     };
 
-    template<class T>
-    concept interface_info = requires {
-        typename T::interface;
-        requires interface_trait<interface_traits<typename T::interface>>;
-        { T::min_version } -> std::convertible_to<uint32_t>;
-        { T::max_version } -> std::convertible_to<uint32_t>;
-    };
-    template<class T, uint32_t min, uint32_t max = 0>
-    struct wl_interface_info {
+    namespace concepts {
+        template<class T>
+        concept interface_info = requires(const T a) {
+            typename T::interface;
+            requires interface_trait<interface_traits<typename T::interface>>;
+            { a.min_version } -> std::convertible_to<uint32_t>;
+            { a.max_version } -> std::convertible_to<uint32_t>;
+        };
+    }
+
+    template<class T, uint32_t min, uint32_t max = min>
+    struct interface_info {
         using interface = T;
         static constexpr uint32_t min_version = min;
         static constexpr uint32_t max_version = max;
     };
 
-    template<interface_info... interfaces>
+    template<concepts::interface_info... interfaces>
     class registry_manager {
         std::shared_ptr<display> m_display;
         registry m_registry {m_display->create_registry()};
         std::tuple<interface_manager<typename interfaces::interface>...> m_managers {};
 
-        template<interface_info ifs, interface_info... remaining>
-        void bind_helper(uint32_t id, const char* interface, uint32_t available_version) {
+        template<concepts::interface_info ifs, concepts::interface_info... remaining>
+        void bind_helper(uint32_t name, const char* interface, uint32_t available_version) {
             using type = typename ifs::interface;
             using traits = interface_traits<type>;
             constexpr uint32_t min_version = ifs::min_version;
@@ -114,44 +106,42 @@ namespace wayland {
                     version = std::min(max_version, available_version);
                 }
 
-                auto global = m_registry.bind<type>(id, version);
+                auto global = m_registry.bind<type>(name, version);
                 manager.add_global(std::move(global));
                 return;
             }
 
             if constexpr (sizeof...(remaining) > 0) {
-                bind_helper<remaining...>(id, interface, available_version);
+                bind_helper<remaining...>(name, interface, available_version);
             }
         }
-        void bind(uint32_t id, const char* interface, uint32_t version) {
-            bind_helper<interfaces...>(id, interface, version);
+        void bind(uint32_t name, const char* interface, uint32_t version) {
+            bind_helper<interfaces...>(name, interface, version);
         }
 
         template<uint32_t index = 0>
-        void remove(uint32_t id) {
+        void remove(uint32_t name) {
             if constexpr (index < sizeof...(interfaces)) {
                 auto& manager = std::get<index>(m_managers);
-                for (auto iter = manager.begin(); iter != manager.end(); ++iter) {
+                for (auto iter = manager.globals().begin(); iter != manager.globals().end(); ++iter) {
                     auto& object = *iter;
-                    if (object->name == id) {
+                    if (object->name == name) {
                         object->remove();
                         manager.remove_global(iter);
                         return;
                     }
                 }
-                remove<index+1>(id);
+                remove<index+1>(name);
             }
         }
 
-        static void registry_handle_global(void* data, struct wl_registry*, uint32_t id, const char* interface, uint32_t version) {
-            static_cast<registry_manager*>(data)->bind(id, interface, version);
-        }
-        static void registry_handle_global_remove(void* data, struct wl_registry*, uint32_t id) {
-            static_cast<registry_manager*>(data)->remove(id);
-        }
         static constexpr wl_registry_listener registry_listener = {
-            .global = registry_handle_global,
-            .global_remove = registry_handle_global_remove
+            .global = [](void* data, struct wl_registry*, uint32_t name, const char* interface, uint32_t version) {
+                static_cast<registry_manager*>(data)->bind(name, interface, version);
+            },
+            .global_remove = [](void* data, struct wl_registry*, uint32_t name) {
+                static_cast<registry_manager*>(data)->remove(name);
+            }
         };
 
     public:
