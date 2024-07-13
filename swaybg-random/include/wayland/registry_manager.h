@@ -46,7 +46,7 @@ namespace wayland {
         }
 
         //TODO: Figure out constness
-        constexpr const std::vector<shared_global> globals() {
+        constexpr const std::vector<shared_global> &globals() {
             return m_objects;
         }
 
