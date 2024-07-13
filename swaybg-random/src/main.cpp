@@ -70,20 +70,30 @@ namespace {
     }
 
     void setup_signal_source(event_loop& loop, background_manager& manager, auto timer_token) {
-        std::array signals = {SIGTERM, SIGUSR1, SIGCHLD};
+        std::array signals = {SIGTERM, SIGUSR1, SIGUSR2, SIGCHLD};
         loop.add_item(signal_source{signals}, [&loop, &manager, timer_token](const signalfd_siginfo& info) {
-            if (info.ssi_signo == SIGTERM) {
-                loop.stop();
-            } else if (info.ssi_signo == SIGUSR1) {
-                manager.on_timer_expired();
-                loop[timer_token].first.reset();
-            } else if (info.ssi_signo == SIGCHLD) {
+            static std::chrono::seconds armed_time {};
+            if (info.ssi_signo == SIGCHLD) {
                 auto pid = static_cast<pid_t>(info.ssi_pid);
                 for (auto& output: manager.outputs()) {
                     if (output.child_pid() == pid) {
                         output.on_child_died(info.ssi_status);
                         break;
                     }
+                }
+            } else if (info.ssi_signo == SIGTERM) {
+                loop.stop();
+            } else if (info.ssi_signo == SIGUSR1) {
+                manager.on_timer_expired();
+                loop[timer_token].first.reset();
+            } else if (info.ssi_signo == SIGUSR2) {
+                timer& source = loop[timer_token].first;
+                if (armed_time.count() != 0) {
+                    source.start(armed_time);
+                    armed_time = {};
+                } else {
+                    armed_time = source.armed_time();
+                    source.stop();
                 }
             }
         });

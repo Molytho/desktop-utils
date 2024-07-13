@@ -30,7 +30,7 @@ namespace detail {
         virtual void post_sleep(short events) noexcept = 0;
     };
 
-    template<class Callback, class Source>
+    template<class Source, class Callback>
         requires event_source<Source, Callback>
     class event_source_wrapper : public loop_element {
         Source m_source;
@@ -66,7 +66,7 @@ class event_loop {
 
 public:
     template<class Callback, event_source<Callback> Source>
-    using token = detail::event_source_wrapper<Callback, Source>*;
+    using token = detail::event_source_wrapper<Source, Callback>*;
 
     void run_once();
     void run();
@@ -74,7 +74,7 @@ public:
 
     template<class Callback, event_source<Callback> Source>
     token<Callback, Source> add_item(Source source, Callback callback) {
-        using Wrapper = detail::event_source_wrapper<Callback, Source>;
+        using Wrapper = detail::event_source_wrapper<Source, Callback>;
         std::unique_ptr<detail::loop_element> loop_element
             = std::make_unique<Wrapper>(std::move(source), std::move(callback));
         m_loop_items.push_back(std::move(loop_element));

@@ -19,6 +19,10 @@ public:
     void stop();
     void reset();
 
+    [[nodiscard]] constexpr std::chrono::seconds armed_time() const {
+        return std::chrono::seconds {m_current_spec.it_interval.tv_sec};
+    }
+
     // event_source implementation
     const int fd;
     const short mask {POLLIN};
