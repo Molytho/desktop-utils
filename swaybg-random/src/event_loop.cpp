@@ -25,7 +25,7 @@ void event_loop::run_helper(std::span<pollfd> pollfds) noexcept {
     auto error = errno;
 
     for (size_t i = 0; i < pollfds.size(); ++i) {
-        auto& revents = pollfds.at(i).revents;
+        auto& revents = pollfds[i].revents;
         m_loop_items.at(i)->post_sleep(revents);
         revents = 0;
     }
