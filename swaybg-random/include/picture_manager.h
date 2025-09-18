@@ -14,17 +14,17 @@ class picture_manager {
     static std::vector<picture> build_pictures(const char *path);
 
 public:
-    explicit picture_manager(const char *path) : m_pictures{build_pictures(path)} { }
-    picture_manager(const picture_manager&) = delete;
-    picture_manager(picture_manager&&) = default;
+    explicit picture_manager(const char *path) : m_pictures {build_pictures(path)} {}
+
+    picture_manager(const picture_manager &) = delete;
+    picture_manager(picture_manager &&)      = default;
 
     constexpr void next() {
         ++m_index;
         m_index %= m_pictures.size();
     }
-    [[nodiscard]] constexpr const picture &get() const {
-        return m_pictures.at(m_index);
-    }
+
+    [[nodiscard]] constexpr const picture &get() const { return m_pictures.at(m_index); }
 };
 
 #endif //SWAYBG_RANDOM_PICTURE_MANAGER_H

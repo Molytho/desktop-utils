@@ -1,32 +1,26 @@
 #include "background_manager.h"
 
-#include <system_error>
+#include <algorithm>
+#include <cassert>
 #include <csignal>
 #include <cstring>
-#include <cassert>
-#include <algorithm>
+#include <system_error>
 
 namespace {
     constexpr std::string swaybg_name = "swaybg";
 
     [[noreturn]] void spawn_child(int picture_fd, char *output_name) {
-        if(dup2(picture_fd, 0) == -1) {
+        if (dup2(picture_fd, 0) == -1) {
             perror("Error while dupping fd to stdin");
             exit(EXIT_FAILURE);
         }
 
-        sigset_t sigset{};
+        sigset_t sigset {};
         sigfillset(&sigset);
         sigprocmask(SIG_UNBLOCK, &sigset, nullptr);
 
-        const std::array<char*, 6> argv = {
-            strdup(swaybg_name.c_str()),
-            strdup("-o"),
-            output_name,
-            strdup("-i"),
-            strdup("/dev/stdin"),
-            nullptr
-        };
+        const std::array<char *, 6> argv
+            = {strdup(swaybg_name.c_str()), strdup("-o"), output_name, strdup("-i"), strdup("/dev/stdin"), nullptr};
 
         execvp(swaybg_name.c_str(), argv.data());
         perror("execvp failed:");
@@ -36,7 +30,7 @@ namespace {
     void kill_child(pid_t pid) {
         kill(pid, SIGTERM);
     }
-}
+} // namespace
 
 output::~output() {
     if (m_swaybg_pid > 0) {
@@ -59,7 +53,7 @@ void output::spawn_swaybg() const {
 }
 
 void output::set_background(const picture &pic) {
-    m_picture = &pic;
+    m_picture     = &pic;
     pid_t old_pid = m_swaybg_pid;
     spawn_swaybg();
     sleep(1);
@@ -72,7 +66,6 @@ void output::on_child_died(int32_t) const {
     m_swaybg_pid = -1;
     spawn_swaybg();
 }
-
 
 const picture &background_manager::get_next_picture() {
     const picture &next_picture = m_picture_manager.get();
@@ -87,7 +80,7 @@ void background_manager::add_output(output output) {
 }
 
 void background_manager::remove_output(uint32_t id) {
-    auto pos = std::find_if(std::begin(m_outputs), std::end(m_outputs), [id](const output& output) {
+    auto pos = std::find_if(std::begin(m_outputs), std::end(m_outputs), [id](const output &output) {
         return output.id() == id;
     });
     if (pos == std::end(m_outputs)) {
@@ -108,7 +101,7 @@ void background_manager::on_timer_expired() {
 
     if (m_current_pos == m_end_pos) {
         m_current_pos = m_outputs.begin();
-        m_end_pos = m_outputs.end();
+        m_end_pos     = m_outputs.end();
         assert(m_current_pos != m_end_pos);
     }
 

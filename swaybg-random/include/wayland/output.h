@@ -1,9 +1,9 @@
 #ifndef SWAYBG_RANDOM_WAYLAND_OUTPUT_H
 #define SWAYBG_RANDOM_WAYLAND_OUTPUT_H
 
-#include "resource_handle.h"
-#include "global.h"
 #include "concepts.h"
+#include "global.h"
+#include "resource_handle.h"
 
 namespace wayland {
     template<>
@@ -24,14 +24,14 @@ namespace wayland {
 
     template<>
     struct interface_traits<wl_output> {
-        using object = wl_output;
-        using global = output;
+        using object     = wl_output;
+        using global     = output;
         using uniqueness = interface_multiple_t;
-        static consteval const wl_interface& interface() noexcept {
-            return wl_output_interface;
-        }
+
+        static consteval const wl_interface &interface() noexcept { return wl_output_interface; }
     };
+
     static_assert(concepts::interface_trait<interface_traits<wl_output>>);
-}
+} // namespace wayland
 
 #endif //SWAYBG_RANDOM_WAYLAND_OUTPUT_H

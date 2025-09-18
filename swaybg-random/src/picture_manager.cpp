@@ -1,12 +1,12 @@
 #include "picture_manager.h"
 
-#include <cstring>
 #include <algorithm>
-#include <random>
 #include <array>
-#include <system_error>
-#include <string>
+#include <cstring>
 #include <memory>
+#include <random>
+#include <string>
+#include <system_error>
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -14,14 +14,11 @@
 #include "function_object.h"
 
 namespace {
-    constexpr std::array<std::string, 2> endings = {
-        ".png",
-        ".jpg"
-    };
+    constexpr std::array<std::string, 2> endings = {".png", ".jpg"};
 
     bool has_correct_ending(const char *str) {
         size_t len = strlen(str);
-        return std::any_of(endings.begin(), endings.end(), [&](const auto& ending) {
+        return std::any_of(endings.begin(), endings.end(), [&](const auto &ending) {
             return len >= ending.size() && (str + len - ending.size()) == ending;
         });
     }
@@ -29,8 +26,8 @@ namespace {
     using dir_delete = function_object<closedir>;
 
     template<class Callback>
-        requires std::invocable<Callback, const dirent&>
-    void for_each_dirent(DIR* directory, Callback callback) {
+        requires std::invocable<Callback, const dirent &>
+    void for_each_dirent(DIR *directory, Callback callback) {
         dirent *dirent;
         while ((dirent = readdir(directory)) != nullptr) {
             callback(*dirent);
@@ -45,7 +42,7 @@ namespace {
         int dir_fd = dirfd(dir.get());
 
         std::vector<picture> result {};
-        for_each_dirent(dir.get(), [&](const dirent& dirent) {
+        for_each_dirent(dir.get(), [&](const dirent &dirent) {
             if (dirent.d_type == DT_REG && has_correct_ending(dirent.d_name)) {
                 int fd = openat(dir_fd, dirent.d_name, O_RDONLY | O_CLOEXEC);
                 if (fd == -1) {
@@ -57,7 +54,7 @@ namespace {
         });
         return result;
     }
-}
+} // namespace
 
 std::vector<picture> picture_manager::build_pictures(const char *path) {
     std::vector<picture> pictures = open_pictures_in_directory(path);

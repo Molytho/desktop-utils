@@ -1,8 +1,8 @@
 #ifndef SWAYBG_RANDOM_WAYLAND_REGISTRY_H
 #define SWAYBG_RANDOM_WAYLAND_REGISTRY_H
 
-#include "interface.h"
 #include "concepts.h"
+#include "interface.h"
 
 namespace wayland {
     template<>
@@ -16,8 +16,8 @@ namespace wayland {
 
         template<class T, concepts::interface_trait traits = interface_traits<T>>
         std::shared_ptr<typename traits::global> bind(uint32_t name, uint32_t version) const {
-            const wl_interface& interface = traits::interface();
-            resource_handle<T> handle {(T*) wl_registry_bind(m_handle.get(), name, &interface, version)};
+            const wl_interface &interface = traits::interface();
+            resource_handle<T> handle {(T *)wl_registry_bind(m_handle.get(), name, &interface, version)};
             return std::make_shared<typename traits::global>(name, std::move(handle));
         }
 
@@ -27,6 +27,6 @@ namespace wayland {
             }
         }
     };
-}
+} // namespace wayland
 
 #endif //SWAYBG_RANDOM_WAYLAND_REGISTRY_H

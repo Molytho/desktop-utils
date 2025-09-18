@@ -3,8 +3,8 @@
 
 #include <cstdint>
 
-#include "resource_handle.h"
 #include "interface.h"
+#include "resource_handle.h"
 
 namespace wayland {
     template<class T>
@@ -16,13 +16,12 @@ namespace wayland {
     public:
         const uint32_t name;
 
-        global(uint32_t name, resource_handle<T> handle) : Base{std::move(handle)}, name{name} { }
-        global(uint32_t name, T *object) : Base{object}, name{name} { }
+        global(uint32_t name, resource_handle<T> handle) : Base {std::move(handle)}, name {name} {}
 
-        constexpr void remove() noexcept {
-            m_removed = true;
-        }
+        global(uint32_t name, T *object) : Base {object}, name {name} {}
+
+        constexpr void remove() noexcept { m_removed = true; }
     };
-}
+} // namespace wayland
 
 #endif //SWAYBG_RANDOM_WAYLAND_GLOBAL_H
