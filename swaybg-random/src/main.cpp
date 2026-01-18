@@ -1,3 +1,9 @@
+#include <charconv>
+#include <csignal>
+#include <iostream>
+
+#include <sys/signalfd.h>
+
 #include "wayland/display.h"
 #include "wayland/output.h"
 #include "wayland/registry_manager.h"
@@ -9,10 +15,6 @@
 
 #include "background_manager.h"
 #include "picture_manager.h"
-
-#include <charconv>
-#include <iostream>
-#include <sys/signalfd.h>
 
 namespace {
     std::chrono::seconds parse_time_argument(const char *arg) {

@@ -1,18 +1,22 @@
 #ifndef SWAYBG_RANDOM_TIMER_H
 #define SWAYBG_RANDOM_TIMER_H
 
-#include <poll.h>
 #include <chrono>
 #include <iostream>
-#include <type_traits>
 
+#include <poll.h>
+
+#include "event_loop.h"
 #include "owning_fd.h"
+#include "util.h"
 
 class timer {
     owning_fd m_timerfd;
     itimerspec m_current_spec {};
 
 public:
+    using CallbackType = bool(uint64_t);
+
     timer();
 
     void start(std::chrono::seconds seconds, bool auto_restart = true);
@@ -24,27 +28,28 @@ public:
     }
 
     // event_source implementation
-    const int fd;
-    const short mask {POLLIN};
+    int fd() const noexcept { return m_timerfd; }
 
-    void pre_sleep() const noexcept { }
+    short mask() const noexcept { return POLLIN; }
 
-    template<class Callback>
-        requires std::is_invocable_r_v<bool, Callback, uint64_t>
-    bool post_sleep(short events, const Callback& callback) const noexcept {
+    template<util::invokable_with_signature<CallbackType> Callback>
+    bool post_sleep(short events, const Callback &callback) const noexcept {
         if (events & POLLERR) {
             std::cerr << "Error on timerfd" << std::endl;
-            exit(EXIT_FAILURE);
+            std::exit(EXIT_FAILURE);
         } else if (events & POLLIN) {
             uint64_t expiration_count;
             ssize_t res = m_timerfd.read(expiration_count);
             if (res == -1) {
                 perror("Error at timerfd read");
+                std::exit(EXIT_FAILURE);
             }
-            return callback(expiration_count);
+            return util::invoke_or_exit_on_exception(callback, expiration_count);
         }
         return true;
     }
 };
+
+static_assert(event_source<timer, timer::CallbackType *>);
 
 #endif //SWAYBG_RANDOM_TIMER_H

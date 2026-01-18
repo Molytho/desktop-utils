@@ -9,10 +9,9 @@
 // TODO: Maybe an add method instead of fd and mask
 template<class T, class Callback>
 concept event_source = requires(const T a, short s, const Callback &callback) {
-    { a.fd } -> std::convertible_to<int>;
-    { a.mask } -> std::convertible_to<short>;
-    { a.pre_sleep() } noexcept;
-    { a.post_sleep(s, callback) } noexcept -> std::convertible_to<bool>;
+    { a.fd() } noexcept -> std::same_as<int>;
+    { a.mask() } noexcept -> std::same_as<short>;
+    { a.post_sleep(s, callback) } noexcept -> std::same_as<bool>;
 } && std::move_constructible<T> && std::move_constructible<Callback>;
 
 namespace detail {
@@ -20,28 +19,36 @@ namespace detail {
         const int fd;
         const short mask;
 
-        loop_element(int fd, short mask) : fd {fd}, mask {mask} {}
-
         virtual ~loop_element() = default;
 
         virtual void pre_sleep() noexcept              = 0;
         virtual void post_sleep(short events) noexcept = 0;
+
+    protected:
+        loop_element(int fd, short mask) : fd {fd}, mask {mask} {}
     };
 
-    template<class Source, class Callback>
-        requires event_source<Source, Callback>
+    template<class T>
+    concept has_pre_sleep = requires(const T &a) { a.pre_sleep(); };
+
+    template<class Callback, event_source<Callback> Source>
     class event_source_wrapper : public loop_element {
         Source m_source;
         [[no_unique_address]] Callback m_callback;
 
     public:
         event_source_wrapper(Source source, Callback callback) :
-                loop_element {source.fd, source.mask}, m_source {std::move(source)},
+                loop_element {source.fd(), source.mask()}, m_source {std::move(source)},
                 m_callback {std::move(callback)} {}
 
         ~event_source_wrapper() override = default;
 
-        void pre_sleep() noexcept override { m_source.pre_sleep(); }
+        void pre_sleep() noexcept override {
+            if constexpr (has_pre_sleep<Source>) {
+                static_assert(noexcept(m_source.pre_sleep()));
+                m_source.pre_sleep();
+            }
+        }
 
         void post_sleep(short events) noexcept override { m_source.post_sleep(events, m_callback); }
 
@@ -61,7 +68,7 @@ class event_loop {
 
 public:
     template<class Callback, event_source<Callback> Source>
-    using token = detail::event_source_wrapper<Source, Callback> *;
+    using token = detail::event_source_wrapper<Callback, Source> *;
 
     void run_once();
     void run();
@@ -69,7 +76,7 @@ public:
 
     template<class Callback, event_source<Callback> Source>
     token<Callback, Source> add_item(Source source, Callback callback) {
-        using Wrapper = detail::event_source_wrapper<Source, Callback>;
+        using Wrapper = detail::event_source_wrapper<Callback, Source>;
         std::unique_ptr<detail::loop_element> loop_element
             = std::make_unique<Wrapper>(std::move(source), std::move(callback));
         m_loop_items.push_back(std::move(loop_element));

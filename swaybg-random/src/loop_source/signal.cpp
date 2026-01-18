@@ -1,5 +1,7 @@
 #include "loop_source/signal.h"
 
+#include <csignal>
+
 #include <sys/signalfd.h>
 
 namespace {
@@ -19,7 +21,7 @@ namespace {
     }
 } // namespace
 
-signal_source::signal_source(std::span<const int> signals) : fd {} {
+signal_source::signal_source(std::span<const int> signals) {
     sigset_t sigset;
     sigemptyset(&sigset);
     for (const int &signal : signals) {
@@ -28,6 +30,5 @@ signal_source::signal_source(std::span<const int> signals) : fd {} {
     [[maybe_unused]] int res = sigprocmask(SIG_BLOCK, &sigset, nullptr);
     assert(res == 0);
 
-    m_signalfd            = make_signalfd(sigset);
-    const_cast<int &>(fd) = m_signalfd;
+    m_signalfd = make_signalfd(sigset);
 }
