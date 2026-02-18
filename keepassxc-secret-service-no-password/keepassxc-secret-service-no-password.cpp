@@ -1,8 +1,8 @@
 #define _POSIX_C_SOURCE 200809L
 #include <fcntl.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/capability.h>
+#include <unistd.h>
 
 #include <iostream>
 
@@ -25,7 +25,7 @@ void open_cred_file() {
     }
 }
 
-[[noreturn]] void spawn_keepass() {    
+[[noreturn]] void spawn_keepass() {
     execl(EXE_PATH, EXE_PATH, "--pw-stdin", "--config", INI_PATH, DB_PATH, NULL);
     perror("spawn_keepass");
     exit(3);
